@@ -1,0 +1,169 @@
+import React, { Component } from "react";
+import items, { detailRoom } from "../data/data";
+
+const RoomContext = React.createContext();
+
+class RoomProvider extends Component {
+  state = {
+    rooms: [],
+    sortedRooms: [],
+    featuredRooms: [],
+    loading: true,
+    type: "all",
+    capacity: 1,
+    price: 0,
+    minPrice: 0,
+    maxPrice: 0,
+    minSize: 0,
+    maxSize: 0,
+    breakfast: false,
+    pets: false,
+    detailRoom,
+    cart: [],
+  };
+
+  componentDidMount() {
+    let rooms = this.formatData(items);
+    let featuredRooms = rooms.filter((room) => room.featured === true);
+
+    let maxPrice = Math.max(...rooms.map((item) => item.price));
+    let maxSize = Math.max(...rooms.map((item) => item.size));
+
+    this.setState({
+      rooms,
+      featuredRooms,
+      sortedRooms: rooms,
+      loading: false,
+      price: maxPrice,
+      maxPrice,
+      maxSize,
+      detailRoom,
+    });
+  }
+
+  formatData(items) {
+    let tempItems = items.map((item) => {
+      let id = item.sys.id;
+      let images = item.fields.images.map((image) => image.fields.file.url);
+
+      let room = { ...item.fields, images, id };
+      return room;
+    });
+    return tempItems;
+  }
+
+  getRoom = (slug) => {
+    let tempRooms = [...this.state.rooms];
+    const room = tempRooms.find((room) => room.slug === slug);
+    return room;
+  };
+
+  getSpecificRoom = (id) => {
+    const room = this.state.rooms.find((room) => room.id === id);
+    return room;
+  };
+
+  handleChange = (event) => {
+    const target = event.target;
+    const value = target.type === "checkbox" ? target.checked : target.value;
+    const name = event.target.name;
+    this.setState(
+      {
+        [name]: value,
+      },
+      this.filterRooms
+    );
+  };
+
+  addToCart = (id) => {
+    console.log(`hello from add to cart; cart.id is ${id}`);
+    let tempSpecificRooms = [...this.state.rooms];
+    const index = tempSpecificRooms.indexOf(this.getSpecificRoom(id));
+    const room = tempSpecificRooms[index];
+    room.inCart = true;
+    room.count = 1;
+    const price = room.price;
+    room.total = price;
+
+    this.setState(
+      () => {
+        return { rooms: tempSpecificRooms, cart: [...this.state.cart, room] };
+      },
+      () => {
+        console.log(this.state);
+      }
+    );
+  };
+
+  filterRooms = () => {
+    let {
+      rooms,
+      type,
+      capacity,
+      price,
+      minSize,
+      maxSize,
+      breakfast,
+      pets,
+    } = this.state;
+
+    let tempRooms = [...rooms];
+
+    capacity = parseInt(capacity);
+
+    if (type !== "all") {
+      tempRooms = tempRooms.filter((room) => room.type === type);
+    }
+
+    if (capacity !== 1) {
+      tempRooms = tempRooms.filter((room) => room.capacity === capacity);
+    }
+
+    tempRooms = tempRooms.filter((room) => room.price <= price);
+
+    tempRooms = tempRooms.filter(
+      (room) => room.size >= minSize && room.size <= maxSize
+    );
+
+    if (breakfast) {
+      tempRooms = tempRooms.filter((room) => room.breakfast === true);
+    }
+
+    if (pets) {
+      tempRooms = tempRooms.filter((room) => room.pets === true);
+    }
+
+    this.setState({
+      sortedRooms: tempRooms,
+    });
+  };
+
+  render() {
+    return (
+      <RoomContext.Provider
+        value={{
+          ...this.state,
+          getRoom: this.getRoom,
+          handleChange: this.handleChange,
+          addToCart: this.addToCart,
+        }}
+      >
+        {this.props.children}
+      </RoomContext.Provider>
+    );
+  }
+}
+
+const RoomConsumer = RoomContext.Consumer;
+
+export function withRoomConsumer(Component) {
+  return function ConsumerWrapper(props) {
+    return (
+      <RoomConsumer>
+        {(value) => <Component {...props} context={value} />}
+      </RoomConsumer>
+    );
+  };
+}
+
+export { RoomProvider, RoomConsumer, RoomContext };
