@@ -34,4 +34,4 @@ We already made sure to use the production build for deployment using:
 
 If just viewing the app is your only purpose you can always see already finished production version which is hosted on serverless platform [https://www.netlify.com/]:
 Use the following link:
-[]
+[https://stupefied-roentgen-762e08.netlify.app/]
