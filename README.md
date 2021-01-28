@@ -8,7 +8,7 @@ In order to run and make it ready to go, in the project directory you have to us
 
 ### `npm install`
 
-### `cd beach-resort`
+### `cd beach-resort-final`
 
 ### `npm start`
 
