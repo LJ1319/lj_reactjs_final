@@ -34,4 +34,4 @@ We already made sure to use the production build for deployment using:
 
 If just viewing the app is your only purpose you can always see already finished production version which is hosted on serverless platform [https://www.netlify.com/]:
 Use the following link:
-[https://wizardly-bhabha-87d2e3.netlify.app/]
+[https://brave-leavitt-dfc203.netlify.app/]
